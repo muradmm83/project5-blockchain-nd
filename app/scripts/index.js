@@ -1,5 +1,9 @@
 // Import the page's CSS. Webpack will know what to do with it.
-import '../styles/app.css'
+//import '../styles/app.css'
+import '../../node_modules/bootstrap/dist/css/bootstrap.min.css';
+import 'jquery';
+import 'popper.js';
+import '../../node_modules/bootstrap/dist/js/bootstrap.min.js';
 
 // Import libraries we need.
 import { default as Web3 } from 'web3'
@@ -19,10 +23,19 @@ let account
 
 const createStar = async () => {
   const instance = await StarNotary.deployed();
-  const name = document.getElementById("starName").value;
-  const id = document.getElementById("starId").value;
-  await instance.createStar(name, id, {from: account});
-  App.setStatus("New Star Owner is " + account + ".");
+  const name = $("#starName").val();
+  const id = $("#starId").val();
+  await instance.createStar(name, id, { from: account });
+  App.setStatus(name, account);
+}
+
+const findStar = async () => {
+  const instance = await StarNotary.deployed();
+  const id = $('#findStarId').val();
+  const starName = await instance.lookUptokenIdToStarInfo(id);
+
+  $('#searchResult').html(starName ? starName : 'Sorry, not star was found 😢');
+  $('#findStarModal').modal('show');
 }
 
 // Add a function lookUp to Lookup a star by ID using tokenIdToStarInfo()
@@ -54,14 +67,26 @@ const App = {
     })
   },
 
-  setStatus: function (message) {
-    const status = document.getElementById('status')
-    status.innerHTML = message
+  setStatus: function (name, owner) {
+
+    $('#createStarModal').modal('hide');
+    $('#starName').val(null);
+    $('#starSymbol').val(null);
+
+    const template = $('#starTemplate');
+    template.find('.card-title').text(name);
+    template.find('.card-text').text(`Owner ${owner}`);
+
+    $('#status').append(template.html());
   },
 
   createStar: function () {
     createStar();
   },
+
+  findStar: function(){
+    findStar();
+  }
 
 }
 
